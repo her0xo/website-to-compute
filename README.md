@@ -1,143 +1,350 @@
-# Your New Website 🤩
+ <!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>موقع h.er0x - الأخبار والعروض</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0; padding: 0 10px;
+    background-color: #f9f9f9;
+    color: #222;
+  }
+  header {
+    background-color: #222;
+    color: #fff;
+    text-align: center;
+    padding: 15px 0;
+    font-size: 24px;
+    font-weight: bold;
+    user-select: none;
+  }
+  .screen {
+    max-width: 600px;
+    margin: 20px auto;
+  }
+  .hidden { display: none; }
+  input[type="text"],
+  input[type="password"],
+  input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0 15px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  button {
+    background-color: #222;
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    user-select: none;
+    transition: background-color 0.3s ease;
+  }
+  button:hover { background-color: #555; }
+  .error-msg { color: red; font-size: 14px; }
+  #posts-container { margin-top: 10px; }
+  .post {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    margin-bottom: 12px;
+    padding: 10px;
+    border-radius: 6px;
+    position: relative;
+    word-break: break-word;
+  }
+  .post-desc { margin-bottom: 4px; font-weight: bold; }
+  .post-date { font-size: 12px; color: #666; margin-top: 2px; margin-bottom: 6px; }
+  .post-link {
+    color: #0077cc;
+    text-decoration: none;
+    word-break: break-word;
+  }
+  .post-img {
+    max-width: 100%;
+    max-height: 150px;
+    margin: 10px 0;
+    border-radius: 4px;
+  }
+  .emoji-reactions { margin-top: 10px; user-select: none; }
+  .emoji-btn {
+    font-size: 24px;
+    margin: 0 5px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.15s ease;
+  }
+  .emoji-btn:active { transform: scale(1.3); }
+  .delete-post-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #c00;
+    font-size: 14px;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  #link-share {
+    margin: 25px auto 40px auto;
+    max-width: 600px;
+    background: #eee;
+    padding: 10px;
+    border-radius: 8px;
+    user-select: all;
+    text-align: center;
+    font-size: 14px;
+    color: #555;
+    word-break: break-all;
+  }
+  #code-login-btn, #refresh-posts-btn {
+    position: fixed;
+    bottom: 20px;
+    background-color: #222;
+    color: #fff;
+    border-radius: 8px;
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    z-index: 9999;
+    user-select: none;
+    transition: background-color 0.3s ease;
+  }
+  #code-login-btn:hover, #refresh-posts-btn:hover { background-color: #555; }
+  #code-login-btn { left: 20px; }
+  #refresh-posts-btn { right: 20px; }
+  @media screen and (max-width: 480px) {
+    body { padding: 10px 5px; }
+    header { font-size: 20px; }
+    button { font-size: 14px; }
+  }
+</style>
 
-Oh hi! Welcome to your new website. 🛼
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"></script>
+<script>
+  // ضع بيانات مشروعك هنا
+  const firebaseConfig = {
+    apiKey: "ضع-هنا",
+    authDomain: "ضع-هنا.firebaseapp.com",
+    databaseURL: "https://ضع-هنا.firebaseio.com",
+    projectId: "ضع-هنا",
+    storageBucket: "ضع-هنا.appspot.com",
+    messagingSenderId: "ضع-هنا",
+    appId: "ضع-هنا"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const storage = firebase.storage();
+</script>
+</head>
+<body>
+<header>h.er0x</header>
 
-With this project you can make a website and preview it in your browser, then deploy it for free – you don't even need a host!
+<!-- تسجيل دخول -->
+<div id="login-screen" class="screen">
+  <h2>تسجيل دخول المشرف</h2>
+  <input type="password" id="password-input" placeholder="أدخل كلمة السر" />
+  <button id="login-btn">دخول</button>
+  <p id="login-msg" class="error-msg"></p>
+</div>
 
-**In this guide we'll learn how to deploy your project to <a href="https://www.fastly.com/products/edge-compute" target="_blank">Fastly Compute</a> – your deployment will automatically handle things like 404 errors, and your beautiful website will immediately be available for everyone, everywhere all at once. 🪄**
+<!-- الصفحة الرئيسية -->
+<div id="main-screen" class="screen hidden">
+  <section id="post-management" class="hidden">
+    <h2>إدارة المنشورات</h2>
+    <input type="text" id="post-link" placeholder="رابط الفيديو أو الموقع (اختياري)" />
+    <input type="text" id="post-desc" placeholder="وصف المنشور (اختياري)" />
+    <input type="file" id="post-image" accept="image/*" />
+    <button id="add-post-btn">إضافة منشور</button>
+  </section>
+  <section id="posts-section">
+    <h2>المنشورات</h2>
+    <div id="posts-container"></div>
+  </section>
+</div>
 
-> You can alternatively deploy your blog to other platforms, like <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>.
+<button id="code-login-btn" title="تسجيل كود المشرف">تسجيل الكود</button>
+<button id="refresh-posts-btn" title="تحديث المنشورات">تحديث</button>
+<div id="link-share">رابط الموقع: <span id="site-url"></span></div>
 
-## In this doc
+<script>
+  const PASSWORD = "CD2007M";
+  const loginScreen = document.getElementById("login-screen");
+  const mainScreen = document.getElementById("main-screen");
+  const loginBtn = document.getElementById("login-btn");
+  const passwordInput = document.getElementById("password-input");
+  const loginMsg = document.getElementById("login-msg");
+  const postManagement = document.getElementById("post-management");
+  const postLinkInput = document.getElementById("post-link");
+  const postDescInput = document.getElementById("post-desc");
+  const postImageInput = document.getElementById("post-image");
+  const addPostBtn = document.getElementById("add-post-btn");
+  const postsContainer = document.getElementById("posts-container");
+  const codeLoginBtn = document.getElementById("code-login-btn");
+  const refreshPostsBtn = document.getElementById("refresh-posts-btn");
+  const emojis = ["💔","🔥","👍","👎","👁️","☝️","🤦"];
+  let posts = [];
+  let reactions = {};
+  let isAdmin = false;
 
-* [Fork your own site](#fork-your-own-site)
-* [Get to know your website](#get-to-know-your-website)
-  * [Share your draft site](#share-your-draft-site)
-* [Deploy your site to Fastly Compute](#deploy-your-site-to-fastly-compute)
-* [Save your edits to GitHub](#save-your-edits-to-github)
-* [How this project works](#how-this-project-works-)
-  * [Extensions](#extensions)
-* [Keep going! 🚀](#keep-going-)
+  document.getElementById("site-url").textContent = window.location.href;
 
-## Fork your own site
+  loginBtn.addEventListener("click", () => {
+    if(passwordInput.value.trim() === PASSWORD) {
+      isAdmin = true;
+      loginScreen.classList.add("hidden");
+      mainScreen.classList.remove("hidden");
+      postManagement.classList.remove("hidden");
+      loadPosts();
+    } else { loginMsg.textContent = "كلمة السر غير صحيحة"; }
+  });
 
-**Fork** [this repository](https://github.com/glitchdotcom/website-to-compute/) to create your own copy of the site.
+  window.addEventListener("load", () => {
+    if(!isAdmin){
+      loginScreen.classList.add("hidden");
+      mainScreen.classList.remove("hidden");
+      postManagement.classList.add("hidden");
+      loadPosts();
+    }
+  });
 
-In your fork, open the site in a codespace by clicking **Code** > **Codespaces** and creating a new codespace on your main branch. 
+  codeLoginBtn.addEventListener("click", () => {
+    const inputCode = prompt("أدخل كود المشرف:");
+    if(inputCode === PASSWORD){
+      isAdmin = true;
+      loginScreen.classList.add("hidden");
+      mainScreen.classList.remove("hidden");
+      postManagement.classList.remove("hidden");
+      loadPosts();
+      alert("تم تسجيل الدخول كمشرف!");
+    } else alert("الكود غير صحيح");
+  });
 
-<img alt="Create codespace" src="https://github.com/user-attachments/assets/cb29a8da-d1ac-42f5-962c-7d43b8011324" width="400px"/><br/>
+  refreshPostsBtn.addEventListener("click", () => {
+    loadPosts();
+    alert("تم تحديث المنشورات");
+  });
 
-Give the codespace a minute or two to start up – it'll automatically build and preview your new website! 
+  function saveData() {
+    db.ref("posts").set(posts);
+    db.ref("reactions").set(reactions);
+  }
 
-![this project in a codespace](https://github.com/user-attachments/assets/308941a8-ddbe-48f6-a8f0-c23cc615ed01)
+  function loadPosts() {
+    db.ref("posts").once("value").then(snap => {
+      posts = snap.val() || [];
+      db.ref("reactions").once("value").then(snap2 => {
+        reactions = snap2.val() || {};
+        renderPosts();
+      });
+    });
+  }
 
-* When your website preview opens, click the **🔎 Split** button at the bottom so that you can see the site side by side with your code.
-* _You can close [x] the **Terminal** while you work._
+  function formatDateTime(dateStr) {
+    const d = new Date(dateStr);
+    if(isNaN(d)) return "تاريخ غير معروف";
+    return `تم الإرسال الساعة ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")} يوم ${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;
+  }
 
-Make sure you [save your changes to GitHub](#save-your-edits-to-github).
+  function createPostElement(post, index) {
+    const postDiv = document.createElement("div");
+    postDiv.classList.add("post");
+    const descP = document.createElement("p");
+    descP.classList.add("post-desc");
+    descP.textContent = post.desc || "بدون وصف";
+    const dateP = document.createElement("p");
+    dateP.classList.add("post-date");
+    dateP.textContent = formatDateTime(post.timestamp);
+    postDiv.appendChild(descP);
+    postDiv.appendChild(dateP);
+    if(post.link){
+      const linkA = document.createElement("a");
+      linkA.href = post.link; linkA.target = "_blank";
+      linkA.classList.add("post-link");
+      linkA.textContent = post.link;
+      postDiv.appendChild(linkA);
+    }
+    if(post.image){
+      const img = document.createElement("img");
+      img.src = post.image; img.classList.add("post-img");
+      postDiv.appendChild(img);
+    }
+    const emojiDiv = document.createElement("div");
+    emojiDiv.classList.add("emoji-reactions");
+    emojis.forEach(e => {
+      const btn = document.createElement("span");
+      btn.textContent = e;
+      btn.classList.add("emoji-btn");
+      btn.addEventListener("click", () => { addReaction(index, e); });
+      emojiDiv.appendChild(btn);
+      const countSpan = document.createElement("span");
+      countSpan.id = `reaction-count-${index}-${e}`;
+      countSpan.textContent = reactions[index]?.[e] || 0;
+      countSpan.style.fontSize = "14px";
+      countSpan.style.margin = "0 5px";
+      emojiDiv.appendChild(countSpan);
+    });
+    postDiv.appendChild(emojiDiv);
+    if(isAdmin){
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "حذف";
+      delBtn.classList.add("delete-post-btn");
+      delBtn.addEventListener("click", () => {
+        if(confirm("هل تريد حذف هذا المنشور؟")) {
+          posts.splice(index,1);
+          delete reactions[index];
+          saveData();
+          renderPosts();
+        }
+      });
+      postDiv.appendChild(delBtn);
+    }
+    return postDiv;
+  }
 
-## Get to know your website
+  function renderPosts() {
+    postsContainer.innerHTML = "";
+    posts.forEach((p, idx) => postsContainer.appendChild(createPostElement(p, idx)));
+  }
 
-You can make edits in the files by opening them from the left sidebar. Your website preview will update as you edit!
+  function addReaction(postIndex, emoji) {
+    if(!reactions[postIndex]) reactions[postIndex] = {};
+    if(!reactions[postIndex][emoji]) reactions[postIndex][emoji] = 0;
+    reactions[postIndex][emoji]++;
+    document.getElementById(`reaction-count-${postIndex}-${emoji}`).textContent = reactions[postIndex][emoji];
+    saveData();
+  }
 
-💡 Try opening `index.html` and making a change.
-
-🎨 Change your site style rules in `style.css`.
-
-🖼️ Add images in the `public` folder – you'll find an example of including an image in the HTML.
-
-> 🚨⚠️ Danger zone: There are directories in the project that might break your site... 😱😈
->
-> * The `.devcontainer` folder includes the configuration that creates the experience in your codespace.
-> * The `helpers` folder contains some bash scripts that run when your project starts and when you hit the **🚀 Publish** button.
-
-### Share your draft site 
-
-You can share links to your draft site with collaborators – click **🔗 Share** at the bottom of the editor. The terminal output will include a link you can right-click and copy to share with anyone you like! 
-
-> This project includes a handy shortcut button for grabbing your preview URL but it might be a wee bit error prone 😅 you can also access these details in **💻 Terminal** > **PORTS** or by clicking the little Forwarded Ports icon: <img src="https://github.com/user-attachments/assets/6bfc0238-a0a8-434f-9188-ff1d45df0ca0" style="height:1em" alt="ports icon"/>
->
-> Change `private` to `public` by right-clicking your running port and choosing from the options.
->
-> Copy the URL to your clipboard and share it 📋.
-
-## Deploy your site to Fastly Compute
-
-Ready to unveil your site to the world? Deploy it to Fastly!
-
-Grab a Fastly API key from your account and add it to your GitHub repo:
-
-- Sign up for a <strong><a href="https://www.fastly.com/signup/" target="_blank">free Fastly developer account</a></strong>
-- Grab an **API Token** from **Account** > **API Tokens** > **Personal Tokens** > **Create Token**
-  - _Type_: Automation
-  - _Role_: Engineer
-  - _Scope_: Global (deselect the _Read-only access_ box)
-  - _Access_: All services
-  - _Expiration_: Never expire
-- **Copy the token value into GitHub**
-  - Back in your codespace, click into the textfield at the top of the editor and type `>` to access the command palette
-  - Type `secret` and select **Codespaces: Manage user secrets**
-    - <img alt="Secret command" src="https://github.com/user-attachments/assets/a6cfeac8-2aca-40a4-ab41-d207733b61cc" width="300px"/>
-  - Click **+ Add a new secret**
-    - <img alt="Add new secret" src="https://github.com/user-attachments/assets/350e545c-0073-4327-ac99-3663049e7aad" width="400px"/>
-  - Enter the name `FASTLY_API_TOKEN`
-    - <img alt="Fastly token" src="https://github.com/user-attachments/assets/536d1b2a-bf62-4085-aac4-ade7d2898583" width="400px"/>
-  - Paste your token value and enter
-
-In the notifications area at the bottom right of your codespace, you should see a prompt to **reload** for the new environment variable, so go ahead and click that (otherwise click the little bell 🔔 icon to check for the message).
-
-Hit the **🚀 Publish** button at the bottom of the editor, enter `y` and watch the **Terminal** output for your new site address! It might take a couple of minutes... 🥁
-
-![New Compute app address in the Terminal](https://github.com/user-attachments/assets/0a5a8f84-4907-4d60-83da-d3b90e745562)
-
-You'll see your new `*.edgecompute.app` address in the output. Open it in a new tab and tell everyone you know about your new site. 📣
-
-🎢 Whenever you update your content, hit the **🚀 Publish** button again to go live!
-
-## Save your edits to GitHub
-
-GitHub will keep the edits you make in the codespace only for a limited time, so it's a good idea to commit your work to a repo regularly. Use the **Source Control** button on the left of the editor – you can make commits, open and merge pull requests right inside the codespace. 
-
-<img alt="source control" src="https://github.com/user-attachments/assets/a5160b08-4f80-4a5f-af76-bde18a43427d" width="300px"/>
-
-> GitHub will notify you if any of your codespaces are about to expire. If you have changes you want to keep, you can use the **Export changes to a branch** option.
-> 
-> <img alt="export to branch" width="500px" src="https://github.com/user-attachments/assets/c7815347-3e5a-4e34-97f2-db58343acaa4"/>
-
-## How this project works 🧐
-
-This project uses the <a href="https://github.com/fastly/compute-js-static-publish" target="_blank">Fastly JavaScript Static Publisher</a> to turn your blog into a serverless app that runs at the network edge, near your users. 
-
-* The project uses [Vite](https://vite.dev/) to build your site for deployment, placing files in the `deploy/_site` folder.
-* The Static Publisher uses those files to scaffold a Compute app that compiles into Webassembly (Wasm) to run fast and securely on the Fastly network – you'll find the Compute code in `deploy/_app` after you deploy.
-* When you publish, the project deploys the app to Fastly, creating a service and uploading the Wasm to it.
-* It then then publishes your content to a KV Store – a key-value store that also runs on Fastly and that your app can talk to.
-
-_The app itself only needs deployed to Fastly once, when you click the **🚀 Publish** button after that, we just update the content in your KV Store and your Compute app will pull your assets from there._
-
-📝 Your Fastly service and KV Store will include your GitHub username and repo in their names, so you'll only be able to deploy one Compute app per repo unless you tweak the scripts.
-
-⚙️ The settings we use to create the guided experience in the codespace are in the `.devcontainer/` folder.
-
-🧰 You'll find the Fastly CLI commands we use under the hood in the `helpers/publish.sh` script.
-
-💻 If you check the right-hand side of the **Terminal** you'll find multiple processes – this is to run the vite and Fastly commands.
-
-### Extensions
-
-This project uses the following extensions from the dev community! 🙌
-
-* [VSCode Action Buttons Ext](https://marketplace.visualstudio.com/items?itemName=jkearins.action-buttons-ext)
-* [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
-
-## Keep going! 🛸
-
-**Don't stop there, <a href="https://www.fastly.com/documentation/solutions/tutorials/deliver-your-site/#sending-domain-traffic-to-fastly" target="_blank">add a domain to your new site</a>.**
-
-You'll find your service in your Fastly account control panel – check out the **Observability** stats! 📊
-
-Check out more tips on using the <a href="https://github.com/fastly/compute-js-static-publish" target="_blank">Static Publisher</a> in its `README`. Note that if you change the Compute code, you'll need to run a separate deploy command to push your changes to Fastly as the **🚀 Publish** button only deploys once, after that it just updates your KV content.
-
-🛟 Get help on the <a href="https://community.fastly.com" target="_blank">community forum</a>.
-
-<img src="https://github.com/user-attachments/assets/17a8af4a-100f-416d-a1cf-f84174262138" width="100px"/>
+  addPostBtn.addEventListener("click", () => {
+    const link = postLinkInput.value.trim();
+    const desc = postDescInput.value.trim();
+    const file = postImageInput.files[0];
+    if(!link && !desc && !file) return alert("يجب إدخال رابط أو وصف أو صورة");
+    if(file){
+      const imgRef = storage.ref("images/" + Date.now() + "-" + file.name);
+      imgRef.put(file).then(snapshot => {
+        snapshot.ref.getDownloadURL().then(url => {
+          posts.unshift({link, desc, image: url, timestamp: new Date().toISOString()});
+          saveData();
+          renderPosts();
+          postLinkInput.value = ""; postDescInput.value = ""; postImageInput.value = "";
+        });
+      });
+    } else {
+      posts.unshift({link, desc, image: null, timestamp: new Date().toISOString()});
+      saveData();
+      renderPosts();
+      postLinkInput.value = ""; postDescInput.value = "";
+    }
+  });
+</script>
+</body>
+</html>
